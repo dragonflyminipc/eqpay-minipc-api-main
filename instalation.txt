@@ -1,0 +1,85 @@
+Copy the backup in Drive D:
+
+INSTALL MINI
+==============
+
+FOR OFFLINE
+==============
+cd D:
+cd eqpay-minipc-api
+
+FOR ONLINE
+==============
+git clone git@github.com:equitypay/eqpay.git
+git clone https://github.com/dragonflyminipc/eqpay-minipc-api-main.git
+
+sudo apt-get install -y python3-venv
+sudo apt-get install -y libgmp-dev
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+cp docs/config.example.py config.py
+
+
+sudo nano /etc/systemd/system/minipc_api.service
+
+[Unit]
+Description=Uvicorn instance to serve the mini pc api
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/root/eqpay-minipc-api
+Environment="PATH=/root/eqpay-minipc-api/venv/bin"
+ExecStart=/root/eqpay-minipc-api/venv/bin/uvicorn app:app --reload --host=0.0.0.0 --port=8888
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+RUN BASIC
+============
+sudo systemctl start minipc_api
+sudo systemctl enable minipc_api
+sudo systemctl status minipc_api
+
+
+SYNC MINI
+=========
+sudo nano /etc/systemd/system/minipc_api_sync.service
+
+[Unit]
+Description=Sync instance to serve the mini pc api
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/root/eqpay-minipc-api
+Environment="PATH=/root/eqpay-minipc-api/venv/bin"
+ExecStart=/root/eqpay-minipc-api/venv/bin/python3 sync.py
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+
+RUN SYNC
+=========
+sudo systemctl start minipc_api_node
+sudo systemctl enable minipc_api_node
+sudo systemctl status minipc_api_node
+
+
+TESTING
+===========
+http://IP_ADDRESS:8888/api/info?mac_address=''&product_id=''&passphrase=''
+
+OUTPUT
+===========
+Minipc not initialized (ERROR)
+
